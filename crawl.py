@@ -1,10 +1,10 @@
 """
 Phase 1 — Documentation crawler.
 
-Reads FRAMEWORKS from sources.py, discovers pages via each site's sitemap,
-downloads the content (clean Markdown when the site offers it, otherwise by
-converting HTML), and saves one file per page under docs/<framework>/ with a
-metadata header that ingest.py reads later.
+Reads FRAMEWORKS from sources.py, discovers pages via each site's sitemap
+(recursing into sitemap-index files), downloads the content (clean Markdown
+when the site offers it, otherwise by converting HTML), and saves one file per
+page under docs/<framework>/ with a metadata header that ingest.py reads later.
 
 Usage:
     python crawl.py               # crawl every framework
@@ -30,16 +30,47 @@ DELAY_SECONDS = 0.3  # be polite: pause between requests
 MIN_CONTENT_CHARS = 100  # skip near-empty pages
 
 
-def get_sitemap_urls(sitemap_url, path_contains=None):
-    """Return the list of page URLs listed in a sitemap.xml."""
+def _fetch_locs(sitemap_url, depth=0):
+    """Return every <loc> in a sitemap, recursing into sitemap-index files."""
     resp = requests.get(sitemap_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
-    # Sitemaps declare an XML namespace; strip it so tag lookups stay simple.
-    xml = re.sub(r'\sxmlns="[^"]+"', "", resp.text, count=1)
-    urls = [loc.text.strip() for loc in ElementTree.fromstring(xml).iter("loc") if loc.text]
-    if path_contains:
-        urls = [u for u in urls if path_contains in u]
-    return urls
+    xml = re.sub(r'\sxmlns="[^"]+"', "", resp.text, count=1)  # drop XML namespace
+    root = ElementTree.fromstring(xml)
+    locs = [loc.text.strip() for loc in root.iter("loc") if loc.text]
+    if root.tag.endswith("sitemapindex") and depth < 2:
+        pages = []
+        for sub in locs:
+            try:
+                pages.extend(_fetch_locs(sub, depth + 1))
+            except Exception as e:
+                print(f"    ! sub-sitemap failed ({sub}): {e}")
+        return pages
+    return locs
+
+
+def get_page_urls(config):
+    """Discover, repair, and filter the page URLs for one framework."""
+    urls = _fetch_locs(config["sitemap"])
+
+    # Some sitemaps are generated with a broken base URL; repair a bad prefix.
+    fix = config.get("url_fix")
+    if fix:
+        old, new = fix
+        urls = [new + u[len(old):] if u.startswith(old) else u for u in urls]
+
+    include = config.get("path_contains")
+    if include:
+        urls = [u for u in urls if include in u]
+    for exclude in config.get("path_excludes", []):
+        urls = [u for u in urls if exclude not in u]
+
+    # De-duplicate while preserving order.
+    seen, ordered = set(), []
+    for u in urls:
+        if u not in seen:
+            seen.add(u)
+            ordered.append(u)
+    return ordered
 
 
 def fetch_mintlify(url):
@@ -66,6 +97,7 @@ def fetch_html(url):
         if container:
             break
     md = html_to_md(str(container or soup), heading_style="ATX")
+    md = re.sub(r"\[¶\]\([^)]*\)", "", md)  # strip MkDocs "permalink" anchors
     return re.sub(r"\n{3,}", "\n\n", md).strip()
 
 
@@ -87,7 +119,7 @@ def crawl_framework(key, config):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        urls = get_sitemap_urls(config["sitemap"], config.get("path_contains"))
+        urls = get_page_urls(config)
     except Exception as e:
         print(f"  ! could not read sitemap ({config['sitemap']}): {e}")
         return
@@ -109,7 +141,7 @@ def crawl_framework(key, config):
             saved += 1
             print(f"  [{i}/{len(urls)}] saved: {title[:60]}")
         except Exception as e:
-            print(f"  [{i}/{len(urls)}] skipped {url} ({e})")
+            print(f"  [{i}/{len(urls)}] skipped {url} ({type(e).__name__})")
         time.sleep(DELAY_SECONDS)
 
     print(f"  done -> {saved} pages saved to {out_dir}/")
