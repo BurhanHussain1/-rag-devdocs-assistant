@@ -1,0 +1,30 @@
+# ---- Secrets / environment ----
+.env
+.env.*
+!.env.example
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+
+# ---- Generated data (regenerate with the scripts, don't commit) ----
+docs/          # crawled documentation  -> run crawl.py
+chroma_db/     # vector store           -> run ingest.py
+*.sqlite3
+
+# ---- OS / editors ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
