@@ -95,7 +95,8 @@ streamlit run app.py   # 3. launch the app
 - [x] **Phase 3** — Retrieval + cited answers (core RAG)
 - [x] **Phase 4** — Streamlit chat UI with framework filter
 - [x] **Phase 5** — Polish (example prompts, source badges, live index stats, code-copy)
-- [ ] **Phase 6** — Evaluation, version-aware retrieval, embedding upgrade
+- [x] **Phase 6** — Evaluation harness (`eval.py`): 10/10 on retrieval, citation & keyword
+- [ ] **Future** — version-aware retrieval, embedding upgrade (bge-base)
 
 ## 📄 License
 

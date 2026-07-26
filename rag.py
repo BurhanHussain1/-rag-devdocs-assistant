@@ -126,6 +126,12 @@ def stats():
 
 
 def main():
+    import sys
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # clean Unicode in the Windows console
+    except Exception:
+        pass
+
     parser = argparse.ArgumentParser(description="Ask the documentation assistant.")
     parser.add_argument("question", nargs="+", help="Your question")
     parser.add_argument("-f", "--framework", default=None, help="Limit search to one framework")
