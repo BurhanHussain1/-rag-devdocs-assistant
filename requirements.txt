@@ -4,5 +4,6 @@ sentence-transformers
 langchain-text-splitters
 requests
 beautifulsoup4
+markdownify
 streamlit
 python-dotenv
