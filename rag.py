@@ -13,6 +13,10 @@ Usage (CLI):
 """
 
 import os
+
+# Quiet ChromaDB telemetry before it is imported (avoids a background reporter).
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+
 import argparse
 
 import chromadb
@@ -41,9 +45,16 @@ Answer the user's question using ONLY the documentation context provided. Rules:
 - Be practical and concise."""
 
 
+_collection = None
+
+
 def get_collection():
-    client = chromadb.PersistentClient(path=CHROMA_DIR)
-    return client.get_collection(COLLECTION_NAME, embedding_function=EMBED_FN)
+    """Open the ChromaDB collection once and reuse it across queries."""
+    global _collection
+    if _collection is None:
+        client = chromadb.PersistentClient(path=CHROMA_DIR)
+        _collection = client.get_collection(COLLECTION_NAME, embedding_function=EMBED_FN)
+    return _collection
 
 
 def retrieve(question, framework=None, k=TOP_K):
