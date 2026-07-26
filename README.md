@@ -89,13 +89,13 @@ streamlit run app.py   # 3. launch the app
 
 ## 🗺️ Roadmap
 
-- [ ] **Phase 0** — Project setup & GitHub scaffolding
-- [ ] **Phase 1** — Multi-framework crawler (all 7 frameworks)
-- [ ] **Phase 2** — Chunk, embed & store with metadata
-- [ ] **Phase 3** — Retrieval + cited answers (core RAG)
-- [ ] **Phase 4** — Streamlit chat UI with framework filter
-- [ ] **Phase 5** — Polish (code copy button, version-aware retrieval, badges)
-- [ ] **Phase 6** — Evaluation & more frameworks
+- [x] **Phase 0** — Project setup & GitHub scaffolding
+- [x] **Phase 1** — Multi-framework crawler (all 7 frameworks, 829 pages)
+- [x] **Phase 2** — Chunk, embed & store with metadata (22,453 chunks)
+- [x] **Phase 3** — Retrieval + cited answers (core RAG)
+- [x] **Phase 4** — Streamlit chat UI with framework filter
+- [x] **Phase 5** — Polish (example prompts, source badges, live index stats, code-copy)
+- [ ] **Phase 6** — Evaluation, version-aware retrieval, embedding upgrade
 
 ## 📄 License
 

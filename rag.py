@@ -115,6 +115,16 @@ def answer(question, framework=None, k=TOP_K):
     return resp.choices[0].message.content, sources
 
 
+def stats():
+    """Return (total_chunks, {framework: count}) for the index — used by the UI."""
+    collection = get_collection()
+    got = collection.get(include=["metadatas"])
+    counts = {}
+    for m in got["metadatas"]:
+        counts[m["framework"]] = counts.get(m["framework"], 0) + 1
+    return collection.count(), counts
+
+
 def main():
     parser = argparse.ArgumentParser(description="Ask the documentation assistant.")
     parser.add_argument("question", nargs="+", help="Your question")
