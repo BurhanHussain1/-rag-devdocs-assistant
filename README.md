@@ -4,7 +4,9 @@ A **Retrieval-Augmented Generation (RAG)** assistant that answers questions abou
 
 Ask it _"How do I create a conditional edge in LangGraph?"_ and it retrieves the relevant documentation and answers, linking back to the exact source page.
 
-> **Status:** 🚧 In active development — see the [Roadmap](#-roadmap).
+> **Status:** ✅ Working end-to-end — see the [Roadmap](#-roadmap).
+
+![The assistant answering a LangGraph question with a cited, syntax-highlighted code example](assets/ui-answer.png)
 
 ---
 
