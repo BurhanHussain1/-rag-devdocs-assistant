@@ -4,43 +4,51 @@ A **Retrieval-Augmented Generation (RAG)** assistant that answers questions abou
 
 Ask it _"How do I create a conditional edge in LangGraph?"_ and it retrieves the relevant documentation and answers, linking back to the exact source page.
 
-> **Status:** ✅ Working end-to-end — see the [Roadmap](#-roadmap).
-
 ![The assistant answering a LangGraph question with a cited, syntax-highlighted code example](assets/ui-answer.png)
 
 ---
 
 ## ✨ Features
 
-- 🔍 **Semantic search** across official documentation
-- 💬 **Conversational Q&A** with follow-up questions
-- 📎 **Source citations** on every answer
-- 🧩 **Filter by framework** (ask within one framework or search all)
-- ⚡ **Free, local embeddings** — no embedding API cost
+- 🔍 **Semantic search** across **829 official documentation pages** (22,453 indexed chunks)
+- 💬 **Conversational Q&A** with follow-up questions and chat history
+- 📎 **Source citations** on every answer, with framework badges
+- 🧩 **Filter by framework** — ask within one, or search all seven at once
+- 🧪 **Example prompts** and a live index-stats sidebar
+- ⚡ **Free, local embeddings** — the only paid piece is the OpenAI answer call
 
 ## 📚 Supported frameworks
 
-**LangGraph · LangChain · OpenAI SDK · Google ADK · CrewAI · FastAPI · Kubernetes**
+**LangGraph · LangChain · OpenAI Agents SDK · Google ADK · CrewAI · FastAPI · Kubernetes**
 
 ## 🏗️ How it works
 
 ```
-Indexing (once):   docs → crawl → chunk → embed → store in vector DB
-Answering (live):  question → embed → search → relevant docs → LLM → cited answer
+Indexing (once):   docs → crawl → chunk → embed → store in ChromaDB
+Answering (live):  question → embed → search → relevant docs → OpenAI → cited answer
 ```
 
-The LLM never answers from memory — it answers from the documentation we retrieve and hand to it, then cites where the answer came from.
+The LLM never answers from memory — it answers only from the documentation retrieved for each question, then cites where every claim came from.
 
 ## 🛠️ Tech stack
 
-| Layer        | Tool                                                  |
-| ------------ | ----------------------------------------------------- |
-| Language / UI| Python · Streamlit                                    |
-| Crawling     | requests · BeautifulSoup                              |
-| Chunking     | langchain-text-splitters                              |
-| Embeddings   | sentence-transformers (local, free)                   |
-| Vector DB    | ChromaDB (local, free)                                |
-| Generation   | OpenAI (`gpt-4o-mini`)                                |
+| Layer         | Tool                                     |
+| ------------- | ---------------------------------------- |
+| Language / UI | Python · Streamlit                       |
+| Crawling      | requests · BeautifulSoup · markdownify   |
+| Chunking      | langchain-text-splitters                 |
+| Embeddings    | all-MiniLM-L6-v2 (local, free)           |
+| Vector DB     | ChromaDB (local, free)                   |
+| Generation    | OpenAI (`gpt-4o-mini`)                    |
+
+## ✅ Evaluation
+
+A labelled question set (`eval.py`) scores three things — did retrieval surface the right framework, did the answer cite it, and is the answer grounded in the docs. Current score: **10/10 on all three**.
+
+```bash
+python eval.py                  # full run (uses OpenAI)
+python eval.py --retrieval-only # free retrieval-only check (no API calls)
+```
 
 ## 🚀 Getting started
 
@@ -71,10 +79,12 @@ cp .env.example .env            # Windows: Copy-Item .env.example .env
 ### Run
 
 ```bash
-python crawl.py        # 1. download the documentation
+python crawl.py        # 1. download the documentation (all 7 frameworks)
 python ingest.py       # 2. build the search index
 streamlit run app.py   # 3. launch the app
 ```
+
+> First-time indexing downloads the docs and a small embedding model, then embeds ~22k chunks — it takes a few minutes. After that, everything runs locally and startup is instant.
 
 ## 📁 Project structure
 
@@ -85,21 +95,11 @@ streamlit run app.py   # 3. launch the app
 ├── ingest.py        # chunk + embed + store in ChromaDB
 ├── rag.py           # retrieve + ask the LLM (the core)
 ├── app.py           # Streamlit chat UI
+├── eval.py          # evaluation harness
 ├── requirements.txt
 └── .env.example
 ```
 
-## 🗺️ Roadmap
-
-- [x] **Phase 0** — Project setup & GitHub scaffolding
-- [x] **Phase 1** — Multi-framework crawler (all 7 frameworks, 829 pages)
-- [x] **Phase 2** — Chunk, embed & store with metadata (22,453 chunks)
-- [x] **Phase 3** — Retrieval + cited answers (core RAG)
-- [x] **Phase 4** — Streamlit chat UI with framework filter
-- [x] **Phase 5** — Polish (example prompts, source badges, live index stats, code-copy)
-- [x] **Phase 6** — Evaluation harness (`eval.py`): 10/10 on retrieval, citation & keyword
-- [ ] **Future** — version-aware retrieval, embedding upgrade (bge-base)
-
 ## 📄 License
 
-Released under the MIT License. _(Optional — add a `LICENSE` file if you want one.)_
+Released under the MIT License.
